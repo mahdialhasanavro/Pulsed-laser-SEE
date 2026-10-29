@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PL SEE Desk Reference: interactive lab</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--tx:#121722;--mut:#5a6577;--bd:#d9dee6;--ac:#1d4ed8;--hot:#dc2626;--warn:#d97706;--ok:#059669;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0f17;--card:#141b27;--tx:#e8edf5;--mut:#93a0b5;--bd:#26324a;--ac:#6aa0ff;--hot:#f87171;--warn:#fbbf24;--ok:#34d399;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b0f17;--card:#141b27;--tx:#e8edf5;--mut:#93a0b5;--bd:#26324a;--ac:#6aa0ff;--hot:#f87171;--warn:#fbbf24;--ok:#34d399;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:16px 14px 40px}
+h1{font:700 1.45rem/1.2 Georgia,"Times New Roman",serif;margin:4px 0}
+h2{font:700 1.08rem/1.3 Georgia,serif;margin:0 0 4px}
+.sub{color:var(--mut);margin:0 0 14px;max-width:68ch}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:14px}
+.ref{font-size:.8rem;color:var(--mut);margin:0 0 8px}
+canvas{width:100%;height:auto;display:block;border-radius:8px;touch-action:manipulation}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
+button,select{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:6px 12px;cursor:pointer}
+button.go{background:var(--ac);color:#fff;border-color:var(--ac)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 18px;margin-bottom:8px}
+.ctrl label{display:block;font-size:.88rem;color:var(--mut)}
+.ctrl label b{color:var(--tx);font-weight:600;float:right}
+input[type=range]{width:100%;accent-color:var(--ac)}
+.met{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.m{border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+.m span{display:block;font-size:.78rem;color:var(--mut)}
+.m strong{font:600 1.08rem/1.3 Georgia,serif}
+.note{font-size:.82rem;color:var(--mut)}
+.bad{color:var(--hot)}.ok{color:var(--ok)}.warn{color:var(--warn)}
+#cl{font-size:.85rem;margin:6px 0 0;padding-left:18px}
+</style></head><body><main>
+<h1>Pulsed-laser SEE: interactive desk reference</h1>
+<p class="sub">Four hands-on explorers built from McMorrow et al., <i>Pulsed-Laser Single-Event Effects (PL SEE) Testing: A Practical Desk Reference</i>, DTRA-TR-23-43 (2023). Section numbers refer to that report. Models are simplified for learning. Hover any graph for readouts; tap graphs marked "tap" to set a value.</p>
+
+<section class="card"><h2>1. Wavelength and carrier generation</h2><p class="ref">Sec. 4.2: SPA needs Eph &gt; Eg (λ = 1240/Eph), TPA needs Eg &gt; Eph &gt; Eg/2.</p>
+<div class="ctrl">
+<label>Semiconductor<select id="mat" style="width:100%"><option value="1.14" selected>Silicon (Eg 1.14 eV)</option><option value="1.42">GaAs (Eg 1.42 eV)</option><option value="3.4">GaN (Eg 3.4 eV)</option></select></label>
+<label>Laser wavelength <b id="lamv"></b><input id="lam" type="range" min="300" max="2500" step="5" value="1064"></label></div>
+<canvas id="cA" aria-label="Absorption coefficient versus wavelength"></canvas>
+<div class="met"><div class="m"><span>Photon energy</span><strong id="a1"></strong></div><div class="m"><span>Absorption process</span><strong id="a2"></strong></div><div class="m"><span>Absorption coefficient α</span><strong id="a3"></strong></div><div class="m"><span>Penetration depth LPD = 1/α</span><strong id="a4"></strong></div></div>
+<p class="note">Curve (silicon only): the 590, 789 and 1064 nm points are the report's values (Fig. 4.5); the rest is log-interpolated. Shaded bands come from the bandgap rule for the chosen material.</p></section>
+
+<section class="card"><h2>2. Pulse energy → laser-equivalent LET</h2><p class="ref">Sec. 4.3–4.4: LETL is linear in E for SPA and quadratic for TPA; sensitive areas smaller than the carrier distribution see less.</p>
+<div class="ctrl">
+<label>Pulse energy at DUT <b id="env"></b><input id="en" type="range" min="0" max="4" step="0.01" value="2.5"></label>
+<label>Beam radius ω0 (HW 1/e²) <b id="w0v"></b><input id="w0" type="range" min="0.4" max="3" step="0.05" value="1"></label>
+<label>Pulse width τ (TPA) <b id="tav"></b><input id="ta" type="range" min="50" max="500" step="10" value="100"></label>
+<label>Optical access<select id="sd" style="width:100%"><option value="b" selected>Back-side (through substrate)</option><option value="t">Top-side (through BEOL metal)</option></select></label>
+<label>Substrate thickness (back-side) <b id="tsv"></b><input id="ts" type="range" min="20" max="500" step="10" value="100"></label>
+<label>Light passing metal (top-side) <b id="tmv"></b><input id="tm" type="range" min="1" max="100" step="1" value="50"></label>
+<label>Sensitive area side <b id="sav"></b><input id="sa" type="range" min="0.1" max="5" step="0.05" value="1"></label></div>
+<canvas id="cB" aria-label="Laser equivalent LET versus pulse energy"></canvas>
+<div class="met"><div class="m"><span>Active mode at this λ</span><strong id="b0"></strong></div><div class="m"><span>Peak LETL</span><strong id="b1"></strong></div><div class="m"><span>Peak LETL (pC/µm)</span><strong id="b2"></strong></div><div class="m"><span>Effective LET for this sensitive area</span><strong id="b3"></strong></div></div>
+<p class="note">Conversion from the report: MeV·cm²/mg = pC/µm × Eehp/(q·ρ) ≈ 96.4 (Si: 3.6 eV, 2330 mg/cm³). TPA uses β = 1.1×10⁻¹¹ m/W; its LETL grows as E²/(ω0²τ) and does not depend on substrate absorption. The area factor is a Gaussian-overlap estimate (graph shows peak LETL).</p></section>
+
+<section class="card"><h2>3. Find sensitive nodes and measure LET threshold</h2><p class="ref">Sec. 6.1 / 6.4 procedure: set an LETL operating point, scan, record hits, then lower LETL until the event disappears. Top-side/back-side uses section 2 settings. Cf. LM139 maps, Fig. 4.4.</p>
+<div class="ctrl"><label>LETL operating point <b id="lov"></b><input id="lo" type="range" min="-0.5" max="2" step="0.01" value="1"></label></div>
+<div class="row"><button class="go" id="scan">Scan die</button><button id="thr">Find thresholds</button><button id="nd">New die</button><span class="note" id="cs"></span></div>
+<canvas id="cC" aria-label="Die map with hidden sensitive nodes"></canvas>
+<h2 style="margin-top:10px;font-size:.95rem">Nodes detectable vs. LETL operating point (tap to set)</h2>
+<canvas id="cC2" aria-label="Nodes detected versus LETL"></canvas>
+<ul id="cl"></ul>
+<p class="note">Nodes under metal only receive the "light passing metal" fraction from top-side, so their measured threshold is overestimated by about 1/transmission.</p></section>
+
+<section class="card"><h2>4. Repetition rate vs. device recovery</h2><p class="ref">Sec. 4.5: if the response has not relaxed before the next pulse, cumulative effects distort the data.</p>
+<div class="ctrl"><label>Laser repetition rate <b id="rrv"></b><input id="rr" type="range" min="3" max="7" step="0.01" value="4.3"></label>
+<label>Device recovery time constant <b id="tdv"></b><input id="td" type="range" min="1" max="6" step="0.01" value="3"></label></div>
+<canvas id="cD" aria-label="Pulse train response"></canvas>
+<div class="met"><div class="m"><span>Pulse period</span><strong id="d1"></strong></div><div class="m"><span>Left at next pulse</span><strong id="d2"></strong></div><div class="m"><span>Steady-state pile-up</span><strong id="d3"></strong></div><div class="m"><span>Verdict</span><strong id="d4"></strong></div></div></section>
+
+<script>
+const $=id=>document.getElementById(id),dpr=Math.min(window.devicePixelRatio||1,2);
+const mk=(id,h)=>{const k=$(id);k.width=700*dpr;k.height=h*dpr;const x=k.getContext('2d');x.scale(dpr,dpr);return x};
+const cA=mk('cA',270),cB=mk('cB',270),cC=mk('cC',290),cC2=mk('cC2',210),cD=mk('cD',240);
+let HV={},dirty=true,S={},nodes=[],scan=null,found={},meas={},spot=null;
+const MEV=96.4,Q=1.602e-19;
+const fE=E=>E<1e3?E.toFixed(E<10?1:0)+' pJ':(E/1e3).toFixed(1)+' nJ';
+const fG=v=>v>=100?v.toFixed(0):v>=1?v.toFixed(1):v>=.01?v.toFixed(3):v.toExponential(0);
+const fS=s=>s<1e-6?(s*1e9).toFixed(0)+' ns':s<1e-3?(s*1e6).toFixed(s<1e-5?1:0)+' µs':(s*1e3).toFixed(s<1e-2?1:0)+' ms';
+const fH=h=>h<1e3?h.toFixed(0)+' Hz':h<1e6?(h/1e3).toFixed(h<1e4?1:0)+' kHz':(h/1e6).toFixed(1)+' MHz';
+const AP=[[500,13300],[590,5882],[789,971],[1064,11],[1090,1]];
+function aSi(l){if(l>1090)return 0;if(l<=500)return 13300;for(let i=0;i<4;i++){const[a,x]=AP[i],[b,y]=AP[i+1];if(l<=b)return Math.exp(Math.log(x)+(Math.log(y)-Math.log(x))*(l-a)/(b-a))}return 0}
+function plot(c,o){const cs=getComputedStyle(document.documentElement),g=v=>cs.getPropertyValue(v).trim();
+ const L=62,R=688,T=18,B=o.h-36,w=R-L,h=B-T,tx=o.xl?Math.log10:v=>v,ty=o.yl?Math.log10:v=>v,a0=tx(o.x0),a1=tx(o.x1),b0=ty(o.y0),b1=ty(o.y1);
+ const X=x=>L+(tx(o.xl?Math.max(x,o.x0):x)-a0)/(a1-a0)*w,Y=y=>B-(ty(o.yl?Math.max(y,o.y0):y)-b0)/(b1-b0)*h;
+ c.canvas.__m={L,R,a0,a1,xl:o.xl};c.clearRect(0,0,700,o.h);c.font='11px sans-serif';c.lineWidth=1;c.setLineDash([]);
+ const tk=(lo,hi,lg)=>{const r=[];if(lg){for(let k=Math.ceil(Math.log10(lo));k<=Math.log10(hi);k++)r.push(Math.pow(10,k))}else for(let k=0;k<=5;k++)r.push(lo+(hi-lo)*k/5);return r};
+ for(const s of o.shade||[]){const x0=X(Math.max(s.a,o.x0)),x1=X(Math.min(s.b,o.x1));if(x1<=x0)continue;c.globalAlpha=.15;c.fillStyle=g(s.col);c.fillRect(x0,T,x1-x0,h);c.globalAlpha=1;c.fillStyle=g('--mut');c.fillText(s.t,x0+4,T+12)}
+ c.strokeStyle=g('--bd');c.fillStyle=g('--mut');
+ for(const v of tk(o.x0,o.x1,o.xl)){const x=X(v);c.beginPath();c.moveTo(x,T);c.lineTo(x,B);c.stroke();c.fillText(o.fx(v),x-14,B+14)}
+ for(const v of tk(o.y0,o.y1,o.yl)){const y=Y(v);c.beginPath();c.moveTo(L,y);c.lineTo(R,y);c.stroke();c.fillText(o.fy(v),2,y+4)}
+ c.fillText(o.xt,L+w/2-60,o.h-6);c.fillText(o.yt,L,11);
+ c.save();c.beginPath();c.rect(L,T,w,h);c.clip();
+ for(const s of o.series){c.strokeStyle=c.fillStyle=g(s.col);c.lineWidth=2;c.setLineDash(s.dash?[5,4]:[]);
+  if(s.dots){s.x.forEach((x,i)=>{c.beginPath();c.arc(X(x),Y(s.y[i]),4.5,0,6.3);c.fill()})}
+  else{c.beginPath();s.x.forEach((x,i)=>{i?c.lineTo(X(x),Y(s.y[i])):c.moveTo(X(x),Y(s.y[i]))});c.stroke()}}
+ c.setLineDash([4,4]);c.lineWidth=1;c.strokeStyle=g('--hot');
+ if(o.mark){c.beginPath();c.moveTo(X(o.mark),T);c.lineTo(X(o.mark),B);c.stroke()}
+ if(o.hl){c.beginPath();c.moveTo(L,Y(o.hl));c.lineTo(R,Y(o.hl));c.stroke()}
+ c.restore();c.setLineDash([]);
+ if(o.hx!=null&&o.hx>=L&&o.hx<=R){const xv=o.xl?Math.pow(10,a0+(o.hx-L)/w*(a1-a0)):a0+(o.hx-L)/w*(a1-a0),s0=o.series.find(s=>!s.dots)||o.series[0];let bi=0,bd=1e99;
+  s0.x.forEach((x,i)=>{const d=Math.abs(tx(x)-tx(xv));if(d<bd){bd=d;bi=i}});const px=X(s0.x[bi]);
+  c.strokeStyle=g('--mut');c.beginPath();c.moveTo(px,T);c.lineTo(px,B);c.stroke();
+  const vs=o.series.filter(s=>!s.dots),ls=[o.fx(s0.x[bi])].concat(vs.map(s=>s.label+': '+o.fy(s.y[bi])));
+  for(const s of vs){c.fillStyle=g(s.col);c.beginPath();c.arc(px,Y(s.y[bi]),4,0,6.3);c.fill()}
+  const bw=o.bw||190,bh=8+ls.length*15,bx=px+10+bw>R?px-bw-10:px+10;c.fillStyle=g('--card');c.strokeStyle=g('--bd');c.fillRect(bx,T+16,bw,bh);c.strokeRect(bx,T+16,bw,bh);
+  c.fillStyle=g('--tx');ls.forEach((t,i)=>c.fillText(t,bx+6,T+31+i*15))}}
+function inv(k,e){const m=k.__m,r=k.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*700;if(!m||px<m.L||px>m.R)return null;const a=m.a0+(px-m.L)/(m.R-m.L)*(m.a1-m.a0);return m.xl?Math.pow(10,a):a}
+const TIP={cA:1,cB:1,cC2:1,cD:1};
+for(const id in TIP){const k=$(id);k.addEventListener('pointermove',e=>{HV[id]=(e.clientX-k.getBoundingClientRect().left)/k.getBoundingClientRect().width*700;dirty=true});k.addEventListener('pointerleave',()=>{HV[id]=null;dirty=true})}
+$('cB').addEventListener('pointerdown',e=>{const v=inv($('cB'),e);if(v){$('en').value=Math.max(0,Math.min(4,Math.log10(v)));calc()}});
+$('cC2').addEventListener('pointerdown',e=>{const v=inv($('cC2'),e);if(v){$('lo').value=Math.max(-.5,Math.min(2,Math.log10(v)));calc()}});
+function P(){return{lam:+$('lam').value,Eg:+$('mat').value,E:Math.pow(10,+$('en').value),w0:+$('w0').value,tau:+$('ta').value,side:$('sd').value,t:+$('ts').value,tm:+$('tm').value/100,sa:+$('sa').value,lo:Math.pow(10,+$('lo').value),rr:Math.pow(10,+$('rr').value),td:Math.pow(10,+$('td').value)*1e-9}}
+function letSPA(E,l,p){const al=aSi(l),Tp=p.side==='b'?Math.exp(-al*p.t*1e-4):p.tm;return E/(1240/l)*Tp*al*1e-4}
+function letTPA(E,l,p){const e=E*1e-12,hw=1240/l*Q,w=p.w0*1e-6,dN=1.1e-11*e*e*1.2533/(2*hw*Math.PI*Math.PI*w*w*p.tau*1e-15);return Q*dN*1e6}
+function calc(){const p=P(),lc=1240/p.Eg;
+ $('lamv').textContent=p.lam+' nm';$('env').textContent=fE(p.E);$('w0v').textContent=p.w0.toFixed(2)+' µm';$('tav').textContent=p.tau+' fs';$('tsv').textContent=p.t+' µm';$('tmv').textContent=(p.tm*100).toFixed(0)+' %';$('sav').textContent=p.sa.toFixed(2)+' µm';$('lov').textContent=fG(p.lo)+' MeV·cm²/mg';
+ $('rrv').textContent=fH(p.rr);$('tdv').textContent=fS(p.td);
+ // A
+ const mode=p.lam<lc?'SPA':p.lam<2*lc?'TPA':'transparent',si=p.Eg===1.14,al=aSi(p.lam);
+ $('a1').textContent=(1240/p.lam).toFixed(2)+' eV';const a2=$('a2');a2.textContent=mode;a2.className=mode==='SPA'?'ok':mode==='TPA'?'warn':'bad';
+ $('a3').textContent=si&&mode==='SPA'?fG(al)+' cm⁻¹':mode==='TPA'?'β₂ (TPA) regime':'n/a';
+ $('a4').textContent=si&&mode==='SPA'?(1e4/al>=1e3?(1e4/al/1e3).toFixed(2)+' mm':(1e4/al).toFixed(1)+' µm'):'n/a';
+ const wl=[],al2=[];for(let l=500;l<1090;l+=10){wl.push(l);al2.push(aSi(l))}
+ S.A={h:270,x0:300,x1:2500,y0:1,y1:1e5,yl:1,xt:'Wavelength (nm)',yt:'Si SPA coefficient α (cm⁻¹, log)',fx:v=>v.toFixed(0),fy:v=>v>=1e3?(v/1e3)+'k':v,mark:p.lam,
+  shade:[{a:300,b:lc,col:'--ok',t:'SPA'},{a:lc,b:2*lc,col:'--warn',t:'TPA'}],
+  series:si?[{x:wl,y:al2,col:'--ac',label:'α',},{x:AP.slice(1,4).map(a=>a[0]),y:AP.slice(1,4).map(a=>a[1]),col:'--hot',dots:1}]:[{x:[300,2500],y:[1,1],col:'--bd',label:'(no α curve)'}]};
+ // B
+ const ls=p.lam<1090?p.lam:1064,inT=p.lam>=lc&&p.lam<2*lc,lt=inT?p.lam:1260,Es=[],ys=[],yt=[];
+ for(let i=0;i<=60;i++){const E=Math.pow(10,i/15);Es.push(E);ys.push(letSPA(E,ls,p)*MEV);yt.push(letTPA(E,lt,p)*MEV)}
+ const act=p.lam<1090?letSPA(p.E,p.lam,p):inT?letTPA(p.E,p.lam,p):0,am=p.lam<1090?'SPA':inT?'TPA':'none',a=p.sa/Math.sqrt(Math.PI),f=1-Math.exp(-2*a*a/(p.w0*p.w0));
+ $('b0').textContent=am==='none'?'no absorption':am+' @ '+p.lam+' nm';$('b1').textContent=fG(act*MEV)+' MeV·cm²/mg';$('b2').textContent=fG(act)+' pC/µm';$('b3').textContent=fG(act*MEV*f)+' ('+(f*100).toFixed(0)+'% overlap)';
+ S.B={h:270,x0:1,x1:1e4,y0:1e-3,y1:1e4,xl:1,yl:1,xt:'Pulse energy at DUT',yt:'Peak LETL (MeV·cm²/mg)',fx:fE,fy:fG,mark:p.E,
+  series:[{x:Es,y:ys,col:'--ac',label:'SPA '+ls+' nm'},{x:Es,y:yt,col:'--warn',label:'TPA '+lt+' nm'}]};
+ // C
+ const acc=n=>p.side==='b'||!n.metal?1:p.tm;S.acc=acc;
+ const Ls=[],cb=[],ct=[];for(let i=0;i<=60;i++){const L=Math.pow(10,-.5+i*2.5/60);Ls.push(L);cb.push(nodes.filter(n=>L>=n.th).length);ct.push(nodes.filter(n=>L*(n.metal?p.tm:1)>=n.th).length)}
+ S.C2={h:210,x0:Math.pow(10,-.5),x1:100,y0:0,y1:nodes.length,xl:1,xt:'LETL operating point (MeV·cm²/mg)',yt:'Nodes detectable',fx:fG,fy:v=>v.toFixed(0),mark:p.lo,bw:170,
+  series:[{x:Ls,y:cb,col:'--ok',label:'back-side'},{x:Ls,y:ct,col:'--warn',label:'top-side'}]};
+ // D
+ const T0=1/p.rr,r=T0/p.td,xs=[],ys2=[];let pk=1;
+ for(let i=0;i<=600;i++){const t=i/100;let v=0;for(let k=0;k<=Math.floor(t);k++)v+=Math.exp(-(t-k)*r);xs.push(t);ys2.push(v);if(v>pk)pk=v}
+ const res=Math.exp(-r),ss=1/(1-res);
+ $('d1').textContent=fS(T0);$('d2').textContent=(res*100).toFixed(res<.01?2:0)+' %';$('d3').textContent='×'+ss.toFixed(2);
+ const d4=$('d4');if(r>=5){d4.textContent='Fully recovers';d4.className='ok'}else if(r>=1){d4.textContent='Partial: baseline builds';d4.className='warn'}else{d4.textContent='Cumulative effect';d4.className='bad'}
+ S.D={h:240,x0:0,x1:6,y0:0,y1:pk*1.1,xt:'Time (in pulse periods)',yt:'Response (single-pulse peak = 1)',fx:v=>v.toFixed(0)+'T',fy:v=>v.toFixed(1),hl:1,bw:170,series:[{x:xs,y:ys2,col:'--ac',label:'response'}]};
+ nodesInfo();dirty=true}
+function mkDie(){nodes=[];found={};meas={};scan=null;spot=null;
+ for(let i=0;i<10;i++){const x=8+Math.random()*104,y=5+Math.random()*40,metal=[[8,15],[22,29],[36,43]].some(b=>y>=b[0]&&y<=b[1]);nodes.push({x,y,metal,th:Math.pow(10,Math.random()*1.7)})}
+ $('cl').innerHTML='';calc()}
+const SX=5.5,SY=5.4,DX=20,DY=8;
+function hitAt(sx,sy,p){nodes.forEach((n,i)=>{const r=Math.hypot(n.x-sx,n.y-sy),f=Math.exp(-2*r*r/(p.w0*p.w0));if(p.lo*f*S.acc(n)>=n.th)found[i]=1})}
+function nodesInfo(){$('cs').textContent='Detected '+Object.keys(found).length+' of '+nodes.length+' nodes'}
+function drawC(){const p=P(),c=cC,top=p.side==='t';c.fillStyle='#0b1220';c.fillRect(0,0,700,290);c.fillStyle='#16233a';c.fillRect(DX,DY,120*SX,50*SY);
+ if(top){c.fillStyle='rgba(148,163,184,.55)';for(const b of[[8,15],[22,29],[36,43]])c.fillRect(DX,DY+b[0]*SY,120*SX,(b[1]-b[0])*SY);c.fillStyle='#cbd5e1';c.font='11px sans-serif';c.fillText('metal (top-side view)',DX+4,DY+11*SY)}
+ else{c.fillStyle='#8aa0c0';c.font='11px sans-serif';c.fillText('back-side view: metal does not block',DX+4,DY+11*SY)}
+ nodes.forEach((n,i)=>{if(!found[i])return;const x=DX+n.x*SX,y=DY+n.y*SY;c.strokeStyle='#ef4444';c.fillStyle='#ef4444';c.lineWidth=2;c.beginPath();c.arc(x,y,4,0,6.3);c.fill();c.beginPath();c.arc(x,y,9,0,6.3);c.stroke();c.fillStyle='#fff';c.font='10px sans-serif';c.fillText(i+1,x+11,y-8)});
+ if(spot){const x=DX+spot.x*SX,y=DY+spot.y*SY,r=Math.max(p.w0*SX,4);c.strokeStyle='#fde047';c.lineWidth=1.5;c.beginPath();c.arc(x,y,r,0,6.3);c.stroke();c.fillStyle='rgba(253,224,71,.3)';c.fill()}
+ c.fillStyle='#8aa0c0';c.font='11px sans-serif';c.fillText('Yellow = laser spot. Red = detected sensitive node.',DX,284)}
+function render(){plot(cA,{...S.A,hx:HV.cA});plot(cB,{...S.B,hx:HV.cB});drawC();plot(cC2,{...S.C2,hx:HV.cC2});plot(cD,{...S.D,hx:HV.cD})}
+function frame(){if(scan){const p=scan.p;for(let k=0;k<60&&scan;k++){spot={x:scan.x,y:scan.y};hitAt(scan.x,scan.y,p);scan.x+=scan.st;if(scan.x>120){scan.x=0;scan.y+=scan.st;if(scan.y>50){scan=null}}}nodesInfo();dirty=true}
+ if(dirty){dirty=false;render()}requestAnimationFrame(frame)}
+$('scan').onclick=()=>{found={};meas={};$('cl').innerHTML='';scan={x:0,y:0,st:Math.max(P().w0*1.4,1.5),p:P()}};
+$('nd').onclick=mkDie;
+$('thr').onclick=()=>{const p=P(),out=[];Object.keys(found).forEach(i=>{const n=nodes[i],a=S.acc(n);let L=p.lo;while(L*.97*a>=n.th)L*=.97;out.push('<li>Node '+(+i+1)+': measured LETth ≈ '+fG(L)+', true '+fG(n.th)+(a<1?' <span class="warn">(under metal: overestimated)</span>':'')+'</li>')});
+ $('cl').innerHTML=out.length?out.join(''):'<li>No nodes detected yet. Scan first, or raise the LETL operating point.</li>'};
+document.querySelectorAll('input[type=range],select').forEach(e=>e.addEventListener('input',()=>{if(e.id==='lo'||e.id==='ts'||e.id==='tm'||e.id==='sd'||e.id==='w0'){found={};scan=null;$('cl').innerHTML=''}calc()}));
+mkDie();requestAnimationFrame(frame);
+</script></main></body></html>
